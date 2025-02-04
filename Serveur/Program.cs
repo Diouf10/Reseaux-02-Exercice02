@@ -25,6 +25,9 @@ internal class Serveur
     private Socket serverSocket;
     private string ipServeur = "10.0.0.87";
     private int portServeur = 12345;
+    
+    // Objet de synchronisation
+    private readonly object lockObject = new object(); // Objet de synchronisation
 
     /**
      * Démarre le serveur
@@ -42,8 +45,6 @@ internal class Serveur
             // Tant que le serveur est démarré, on accepte les connexions
             while (true)
             {
-                //Console.WriteLine("[INFO] En attente d'un client...");
-                
                 // Accepter une connexion
                 Socket clientSocket = serverSocket.Accept();
                 Console.WriteLine($"[INFO] Nouveau client connecté : {clientSocket.RemoteEndPoint}");
@@ -52,6 +53,10 @@ internal class Serveur
                 Thread clientThread = new Thread(() => HandleClient(clientSocket));
                 clientThread.Start();
             }
+        }
+		catch (SocketException ex) when (ex.ErrorCode == 10048)
+        {
+            Console.WriteLine($"[ERREUR] Le port {portServeur} est déjà utilisé.");
         }
         catch (Exception ex)
         {
@@ -75,12 +80,15 @@ internal class Serveur
 
             if (string.IsNullOrWhiteSpace(clientName))
             {
-                Console.WriteLine("[ERREUR] Un client a tenté de se connecter sans nom.");
+                Console.WriteLine("[ERREUR] Un client a tenté de se connecter ou s'est deconnecté sans nom.");
                 clientSocket.Close();
                 return;
             }
 
-            clients[clientName] = clientSocket;
+            lock (lockObject)
+            {
+                clients[clientName] = clientSocket;
+            }
             Console.WriteLine($"[INFO] {clientName} ({clientSocket.RemoteEndPoint}) a rejoint le chat.");
             
             // Envoyer un message pour informer les autres clients.
@@ -93,52 +101,82 @@ internal class Serveur
                 if (bytesRead == 0) break;
 
                 string messageRecu = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                Console.WriteLine($"[{clientName}] {messageRecu}");
+                Console.WriteLine($"[{clientName}] ({clientSocket.RemoteEndPoint}) : {messageRecu}");
 
                 if (messageRecu.ToLower() == "exit")
                 {
-                    Console.WriteLine($"[INFO] {clientName} s'est déconnecté.");
+                    Console.WriteLine($"[INFO] {clientName} ({clientSocket.RemoteEndPoint}) s'est déconnecté.");
                     break;
                 }
 
                 // Envoyer le message à tous les clients
-                BroadcastMessage($"[{clientName}] {messageRecu}", clientName);
+                BroadcastMessage($"[{clientName}] ({clientSocket.RemoteEndPoint}) : {messageRecu}", clientName);
             }
         }
+        
+        // Gestion de la déconnexion du client, Erreur 10054
         catch (SocketException ex) when (ex.ErrorCode == 10054)
         {
             Console.WriteLine($"[ERREUR] {clientName} s'est déconnecté brutalement.");
         }
+        
+        // finalement, fermer la connexion
         finally
         {
-            if (clientName != null && clients.ContainsKey(clientName))
+            if (clientName != null)
             {
-                clients.Remove(clientName);
+                lock (lockObject)
+                {
+                    if (clients.ContainsKey(clientName))
+                    {
+                        clients.Remove(clientName);
+                    }
+                }
             }
+            
+            // Fermer la connexion
+            try
+            {
+                if (clientSocket.Connected)
+                {
+                    Console.WriteLine($"[INFO] {clientName} ({clientSocket.RemoteEndPoint}) a quitté le chat.");
+                }
+            }
+            
+            // Erreur si le socket est déjà fermé
+            catch (ObjectDisposedException)
+            {
+                Console.WriteLine($"[INFO] {clientName} a quitté le chat (socket déjà fermé).");
+            }
+
             clientSocket.Close();
-            Console.WriteLine($"[INFO] {clientName} a quitté le chat.");
             BroadcastMessage($"[INFO] {clientName} a quitté le chat.", clientName);
         }
     }
 
-    // Envoie un message à tous les clients sauf l'expéditeur
-    // ps: on j'avais dèjà vu le broadcast avec Pierre session passe :) (Mouhammad)
+    /**
+     * Envoie un message à tous les clients sauf l'expéditeur
+     * ps: j'avais déjà vu le broadcast avec Pierre session passée :)
+     */
     private void BroadcastMessage(string message, string sender)
     {
         byte[] data = Encoding.UTF8.GetBytes(message);
         
-        // On envoie le message à tous les clients sauf l'expéditeur
-        foreach (var client in clients)
+        // Envoyer le message à tous les clients
+        lock (lockObject)
         {
-            if (client.Key != sender && client.Value.Connected)
+            foreach (var client in clients)
             {
-                try
+                if (client.Key != sender && client.Value.Connected)
                 {
-                    client.Value.Send(data);
-                }
-                catch (SocketException)
-                {
-                    Console.WriteLine($"[ERREUR] Impossible d'envoyer un message à {client.Key}");
+                    try
+                    {
+                        client.Value.Send(data);
+                    }
+                    catch (SocketException)
+                    {
+                        Console.WriteLine($"[ERREUR] Impossible d'envoyer un message à {client.Key}");
+                    }
                 }
             }
         }

@@ -1,12 +1,13 @@
-/Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/obj/Debug/net9.0/Client.GeneratedMSBuildEditorConfig.editorconfig
-/Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/obj/Debug/net9.0/Client.AssemblyInfoInputs.cache
-/Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/obj/Debug/net9.0/Client.AssemblyInfo.cs
-/Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/obj/Debug/net9.0/Client.csproj.CoreCompileInputs.cache
 /Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/bin/Debug/net9.0/Client
 /Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/bin/Debug/net9.0/Client.deps.json
 /Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/bin/Debug/net9.0/Client.runtimeconfig.json
 /Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/bin/Debug/net9.0/Client.dll
 /Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/bin/Debug/net9.0/Client.pdb
+/Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/obj/Debug/net9.0/Client.GeneratedMSBuildEditorConfig.editorconfig
+/Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/obj/Debug/net9.0/Client.AssemblyInfoInputs.cache
+/Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/obj/Debug/net9.0/Client.AssemblyInfo.cs
+/Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/obj/Debug/net9.0/Client.csproj.CoreCompileInputs.cache
+/Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/obj/Debug/net9.0/Client.sourcelink.json
 /Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/obj/Debug/net9.0/Client.dll
 /Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/obj/Debug/net9.0/refint/Client.dll
 /Users/mouhammadwaganediouf/Documents/Reseaux-02-Exercice02/Client/obj/Debug/net9.0/Client.pdb

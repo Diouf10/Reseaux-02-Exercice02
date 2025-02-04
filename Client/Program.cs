@@ -37,10 +37,8 @@ internal class Client
             // Connexion au serveur
             clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             clientSocket.Connect(ipServeur, portServeur);
-
             
             // Demander le nom du client
-            
             Console.Write("Veuillez entrer votre nom : ");
             string nomClient = Console.ReadLine()?.Trim() ?? "";
 
@@ -77,12 +75,18 @@ internal class Client
                 {
                     Console.WriteLine("Déconnexion...");
                     isRunning = false;
+                    clientSocket.Shutdown(SocketShutdown.Both); // Empêche toute nouvelle lecture/écriture
                     break;
                 }
             }
 
             clientSocket.Close();
         }
+
+		catch (SocketException ex) when (ex.ErrorCode == 10060) 
+		{
+			Console.WriteLine("[Erreur] Temps d'attente dépassé ! Assurez-vous que le serveur est démarré.");
+		}
         
         // Gestion de la connexion refusée, Erreur 10061
         catch (SocketException ex) when (ex.ErrorCode == 10061)
@@ -121,11 +125,20 @@ internal class Client
         {
             Console.WriteLine("[ERREUR] Le serveur a été fermé.");
         }
+        
+        catch (SocketException ex) when (ex.ErrorCode == 53)
+        {
+            Console.WriteLine("");
+        }
+        
         // finallment, fermer la connexion
         finally
         {
             isRunning = false;
-            clientSocket.Close();
+            if (clientSocket.Connected)
+            {
+                clientSocket.Close();
+            }
         }
     }
 }
